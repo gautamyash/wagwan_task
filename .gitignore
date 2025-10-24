@@ -1,0 +1,61 @@
+# Backend (Go)
+backend/event-guest-manager
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Frontend (Node/Svelte)
+node_modules/
+.svelte-kit/
+build/
+.DS_Store
+.env
+.env.*
+!.env.example
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+postgres_data/
+
+# Temporary test files
+*.log
+
+# Administrator-only files (never commit these)
+ADMIN_SETUP.md
+TEST_GUIDE.md
+SOLUTIONS.md
+OVERVIEW.md
+FILES_OVERVIEW.md
+FINAL_SUMMARY.md
+DISTRIBUTION_CHECKLIST.md
+TEST_RESULTS.md
+INSTALLATION_SUMMARY.txt
+GIT_SETUP.md
+.admin-files
+
+# Old documentation (replaced with simpler docs)
+QUICK_START.md
+START_HERE.md
+PROJECT_STRUCTURE.md
+CHANGELOG.md
+PUBLIC_RSVP_FEATURE.md
+
