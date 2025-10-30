@@ -1,0 +1,7 @@
+ALTER TABLE guests DROP CONSTRAINT IF EXISTS fk_event;
+ALTER TABLE guests DROP COLUMN IF EXISTS notes,
+    DROP COLUMN IF EXISTS event_id,
+    DROP COLUMN IF EXISTS rsvp_date,
+    DROP COLUMN IF EXISTS plus_ones,
+    DROP COLUMN IF EXISTS dietary_restrictions;
+DROP TABLE IF EXISTS events;

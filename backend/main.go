@@ -31,36 +31,43 @@ func main() {
 	}
 	defer db.Close()
 
-	// Wait for database to be ready
+	// Wait for DB
 	for i := 0; i < 30; i++ {
-		err = db.Ping()
-		if err == nil {
+		if err = db.Ping(); err == nil {
 			break
 		}
 		log.Println("Waiting for database...")
 		time.Sleep(time.Second)
 	}
-
 	if err != nil {
 		log.Fatal("Database not available:", err)
 	}
 
-	log.Println("Successfully connected to database")
+	log.Println("✅ Connected to database")
 
-	// Initialize handlers
 	guestHandler := handlers.NewGuestHandler(db)
 
-	// Setup router
 	router := mux.NewRouter()
 
-	// API routes
+	// --- API routes ---
 	api := router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/guests", guestHandler.GetGuests).Methods("GET")
 	api.HandleFunc("/guests", guestHandler.CreateGuest).Methods("POST")
 	api.HandleFunc("/guests/{id}", guestHandler.GetGuest).Methods("GET")
 	api.HandleFunc("/guests/{id}", guestHandler.DeleteGuest).Methods("DELETE")
 
-	// CORS setup
+	// --- Serve Svelte static frontend ---
+	fs := http.FileServer(http.Dir("../frontend/build"))
+	router.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := "../frontend/build" + r.URL.Path
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			http.ServeFile(w, r, "../frontend/build/index.html")
+			return
+		}
+		fs.ServeHTTP(w, r)
+	})
+
+	// --- CORS setup ---
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost:4173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -68,11 +75,9 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	handler := c.Handler(router)
-
 	port := getEnv("PORT", "8080")
-	log.Printf("Server starting on port %s...\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, handler))
+	log.Printf("🚀 Server running at: http://localhost:%s\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, c.Handler(router)))
 }
 
 func getEnv(key, defaultValue string) string {

@@ -6,33 +6,36 @@ import (
 	"time"
 )
 
+// ------------------ Struct ------------------
 type Guest struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+    ID                  int            `json:"id"`
+    Name                string         `json:"name"`
+    Email               string         `json:"email"`
+    Phone               string         `json:"phone"`
+    Status              string         `json:"status"`
+    Notes               sql.NullString `json:"notes,omitempty"`
+    EventID             sql.NullInt64  `json:"event_id,omitempty"`
+    PlusOnes            int            `json:"plus_ones"`
+    DietaryRestrictions sql.NullString `json:"dietary_restrictions,omitempty"`
+    CreatedAt           time.Time      `json:"created_at"`
 }
 
-// GetAllGuests retrieves all guests from the database
-// BUG #1: This query sorts by created_at instead of name
+// ------------------ GetAllGuests ------------------
 func GetAllGuests(db *sql.DB, status string) ([]Guest, error) {
 	var rows *sql.Rows
 	var err error
 
 	if status != "" {
-		// BUG #3 (Backend part): This expects 'status' parameter
 		rows, err = db.Query(`
-			SELECT id, name, email, phone, status, created_at 
-			FROM guests 
-			WHERE status = $1 
+			SELECT id, name, email, phone, status, notes, event_id, plus_ones, dietary_restrictions, created_at
+			FROM guests
+			WHERE status = $1
 			ORDER BY created_at ASC
 		`, status)
 	} else {
 		rows, err = db.Query(`
-			SELECT id, name, email, phone, status, created_at 
-			FROM guests 
+			SELECT id, name, email, phone, status, notes, event_id, plus_ones, dietary_restrictions, created_at
+			FROM guests
 			ORDER BY created_at ASC
 		`)
 	}
@@ -45,7 +48,10 @@ func GetAllGuests(db *sql.DB, status string) ([]Guest, error) {
 	var guests []Guest
 	for rows.Next() {
 		var g Guest
-		err := rows.Scan(&g.ID, &g.Name, &g.Email, &g.Phone, &g.Status, &g.CreatedAt)
+		err := rows.Scan(
+			&g.ID, &g.Name, &g.Email, &g.Phone, &g.Status,
+			&g.Notes, &g.EventID, &g.PlusOnes, &g.DietaryRestrictions, &g.CreatedAt,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -55,14 +61,17 @@ func GetAllGuests(db *sql.DB, status string) ([]Guest, error) {
 	return guests, rows.Err()
 }
 
-// GetGuestByID retrieves a single guest by ID
+// ------------------ GetGuestByID ------------------
 func GetGuestByID(db *sql.DB, id int) (*Guest, error) {
 	var g Guest
 	err := db.QueryRow(`
-		SELECT id, name, email, phone, status, created_at 
-		FROM guests 
+		SELECT id, name, email, phone, status, notes, event_id, plus_ones, dietary_restrictions, created_at
+		FROM guests
 		WHERE id = $1
-	`, id).Scan(&g.ID, &g.Name, &g.Email, &g.Phone, &g.Status, &g.CreatedAt)
+	`, id).Scan(
+		&g.ID, &g.Name, &g.Email, &g.Phone, &g.Status,
+		&g.Notes, &g.EventID, &g.PlusOnes, &g.DietaryRestrictions, &g.CreatedAt,
+	)
 
 	if err == sql.ErrNoRows {
 		return nil, errors.New("guest not found")
@@ -74,14 +83,40 @@ func GetGuestByID(db *sql.DB, id int) (*Guest, error) {
 	return &g, nil
 }
 
-// CreateGuest inserts a new guest into the database
-func CreateGuest(db *sql.DB, name, email, phone, status string) (*Guest, error) {
+// ------------------ CreateGuest ------------------
+func CreateGuest(db *sql.DB, name, email, phone, status, notes string, eventID, plusOnes int, dietaryRestrictions string) (*Guest, error) {
 	var g Guest
+	
+	// Convert empty strings to NULL for optional fields
+	var notesPtr interface{} = notes
+	if notes == "" {
+		notesPtr = nil
+	}
+	
+	var dietaryRestrictionsPtr interface{} = dietaryRestrictions
+	if dietaryRestrictions == "" {
+		dietaryRestrictionsPtr = nil
+	}
+
+	// Set default value for plus_ones if not provided
+	if plusOnes < 0 {
+		plusOnes = 0
+	}
+
+	// Handle event_id
+	var eventIDPtr interface{} = eventID
+	if eventID <= 0 {
+		eventIDPtr = nil
+	}
+
 	err := db.QueryRow(`
-		INSERT INTO guests (name, email, phone, status, created_at)
-		VALUES ($1, $2, $3, $4, NOW())
-		RETURNING id, name, email, phone, status, created_at
-	`, name, email, phone, status).Scan(&g.ID, &g.Name, &g.Email, &g.Phone, &g.Status, &g.CreatedAt)
+		INSERT INTO guests (name, email, phone, status, notes, event_id, plus_ones, dietary_restrictions, rsvp_date)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+		RETURNING id, name, email, phone, status, notes, event_id, plus_ones, dietary_restrictions, created_at
+	`, name, email, phone, status, notesPtr, eventIDPtr, plusOnes, dietaryRestrictionsPtr).Scan(
+		&g.ID, &g.Name, &g.Email, &g.Phone, &g.Status,
+		&g.Notes, &g.EventID, &g.PlusOnes, &g.DietaryRestrictions, &g.CreatedAt,
+	)
 
 	if err != nil {
 		return nil, err
@@ -90,7 +125,7 @@ func CreateGuest(db *sql.DB, name, email, phone, status string) (*Guest, error) 
 	return &g, nil
 }
 
-// DeleteGuest removes a guest from the database
+// ------------------ DeleteGuest ------------------
 func DeleteGuest(db *sql.DB, id int) error {
 	result, err := db.Exec("DELETE FROM guests WHERE id = $1", id)
 	if err != nil {

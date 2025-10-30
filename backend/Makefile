@@ -1,4 +1,4 @@
-.PHONY: run build clean
+.PHONY: run build clean migrate-up migrate-down install-deps
 
 run:
 	go run main.go
@@ -13,3 +13,8 @@ install-deps:
 	go mod download
 	go mod tidy
 
+migrate-up:
+	go run ./cmd/migrate
+
+migrate-down:
+	go run ./cmd/migrate down

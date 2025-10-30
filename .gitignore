@@ -39,6 +39,12 @@ postgres_data/
 # Temporary test files
 *.log
 
+# NPM / Node package manager artifacts
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npmrc
+
 # Administrator-only files (never commit these)
 ADMIN_SETUP.md
 TEST_GUIDE.md

@@ -6,6 +6,10 @@ export interface Guest {
 	email: string;
 	phone: string;
 	status: 'pending' | 'attending' | 'declined';
+	notes?: string;
+	plus_ones?: number;
+	dietary_restrictions?: string;
+	rsvp_date?: string;
 	created_at: string;
 }
 
@@ -16,12 +20,11 @@ export interface CreateGuestData {
 	status?: 'pending' | 'attending' | 'declined';
 }
 
-// BUG #3 (Frontend part): Uses 'filter' parameter but backend expects 'status'
 export async function getGuests(statusFilter?: string): Promise<Guest[]> {
 	let url = `${API_BASE_URL}/guests`;
 	
 	if (statusFilter) {
-		url += `?filter=${statusFilter}`;  // Bug: should be 'status' not 'filter'
+		url += `?status=${statusFilter}`;  // Fixed: Changed 'filter' to 'status' to match backend
 	}
 
 	const response = await fetch(url);

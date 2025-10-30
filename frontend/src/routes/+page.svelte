@@ -100,9 +100,8 @@
 
 	// Reload when filter changes
 	$effect(() => {
-		if (statusFilter !== undefined) {
-			loadGuests();
-		}
+		statusFilter; // Track the statusFilter variable
+		loadGuests();
 	});
 </script>
 
@@ -260,6 +259,15 @@
 									Status
 								</th>
 								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Plus Ones
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Dietary
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Notes
+								</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									Actions
 								</th>
 							</tr>
@@ -280,6 +288,15 @@
 										<span class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(guest.status)}`}>
 											{guest.status}
 										</span>
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+										{guest.plus_ones || 0}
+									</td>
+									<td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title={guest.dietary_restrictions || '-'}>
+										{guest.dietary_restrictions || '-'}
+									</td>
+									<td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title={guest.notes || '-'}>
+										{guest.notes || '-'}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm">
 										<button
