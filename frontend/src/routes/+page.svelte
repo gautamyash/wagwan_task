@@ -15,6 +15,7 @@
 	let formStatus = $state<'pending' | 'attending' | 'declined'>('pending');
 	let formError = $state<string | null>(null);
 	let formSubmitting = $state(false);
+	let formPlusOnes = $state(0);
 
 	async function loadGuests() {
 		try {
@@ -51,7 +52,8 @@
 				name: formName,
 				email: formEmail,
 				phone: formPhone,
-				status: formStatus
+				status: formStatus,
+				plus_ones: Number(formPlusOnes)
 			});
 
 			// Reset form
@@ -59,6 +61,7 @@
 			formEmail = '';
 			formPhone = '';
 			formStatus = 'pending';
+			formPlusOnes = 0;
 			showForm = false;
 
 			// Reload guests
@@ -204,6 +207,18 @@
 								<option value="attending">Attending</option>
 								<option value="declined">Declined</option>
 							</select>
+						</div>
+						<div>
+							<label for="plus_ones" class="block text-sm font-medium text-gray-700 mb-1">
+								Plus Ones
+							</label>
+							<input
+								type="number"
+								id="plus_ones"
+								min="0"
+								bind:value={formPlusOnes}
+								class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							/>
 						</div>
 					</div>
 
