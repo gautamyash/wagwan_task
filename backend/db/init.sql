@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS guests (
     phone VARCHAR(50),
     status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'attending', 'declined')),
     notes TEXT,
-    rsvp_date TIMESTAMP DEFAULT NULL,
+    rsvp_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     plus_ones INT DEFAULT 0,
     dietary_restrictions TEXT,
     event_id INT REFERENCES events(id) ON DELETE
