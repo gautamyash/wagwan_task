@@ -89,6 +89,16 @@ npm run build
 
 Reload <http://localhost:8080/rsvp>. Repeat `npm run build` whenever UI changes should appear on 8080.
 
+## 5) RSVP via SvelteKit Server Actions
+
+The public RSVP page (`/rsvp`) posts using a SvelteKit server action which proxies to the Go API.
+
+Verify:
+
+- In DevTools → Network, submitting shows a POST to `/rsvp` (same origin), not directly to `http://localhost:8080/api/guests`.
+- With JavaScript disabled, submission still works and shows success/error.
+- Data appears on the admin page (`/`) and via API `GET /api/guests`.
+
 ## Endpoints
 
 - GET `/api/guests?status=pending|attending|declined`
